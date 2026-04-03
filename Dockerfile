@@ -10,8 +10,7 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 COPY ./app/requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+RUN pip install -U pip==26.0 &&pip install --no-cache-dir -r requirements.txt
 
 
 # Final runtime image (lightweight: slim)
@@ -19,8 +18,7 @@ FROM python:3.14-slim AS runtime
 
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Upgrade base tooling/libs so Trivy doesn't flag old system packages
-RUN python -m pip install --no-cache-dir --upgrade pip
+RUN pip install -U pip==26.0
 
 # Run as a non-root user (avoid relying on useradd/groupadd presence)
 ARG APP_UID=10001

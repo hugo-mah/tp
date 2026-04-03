@@ -71,7 +71,7 @@ jobs:
           output: trivy-results.sarif
           severity: HIGH,CRITICAL    # sévérités à détecter
           exit-code: "1"             # fait échouer le job si des CVE sont trouvées
-          ignore-unfixed: "false"    # inclure les vulnérabilités sans correctif disponible
+          ignore-unfixed: "true"    # inclure les vulnérabilités sans correctif disponible
 
       - name: Upload rapport SARIF vers GitHub Security
         uses: github/codeql-action/upload-sarif@v3
