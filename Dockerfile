@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Multi-stage build: install dependencies in a separate build stage
-FROM python:3.14-slim AS builder
+FROM --platform=$BUILDPLATFORM python:3.14-slim AS builder
 
 WORKDIR /build
 
