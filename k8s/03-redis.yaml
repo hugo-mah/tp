@@ -48,6 +48,10 @@ spec:
                   key: REDIS_PASSWORD
           ports:
             - containerPort: 6379
+
+          securityContext:
+            allowPrivilegeEscalation: false
+          
           livenessProbe:
             # Redis ne propose pas d'endpoint HTTP.
             # Utilisez une probe de type exec avec redis-cli.
