@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Multi-stage build: install dependencies in a separate build stage
-FROM --platform=$BUILDPLATFORM python:3.14-slim AS builder
+FROM --platform=linux/arm64 python:3.14-slim AS builder
 
 WORKDIR /build
 
@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -U pip==26.0 && pip install --no-cache-dir -r req
 
 
 # Final runtime image (lightweight: slim)
-FROM python:3.14-slim AS runtime
+FROM --platform=linux/arm64 python:3.14-slim AS runtime
 
 ENV PATH="/opt/venv/bin:$PATH"
 
