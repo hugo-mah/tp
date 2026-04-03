@@ -13,7 +13,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-deny-all
-  namespace: # ???
+  namespace: taskmanager
 spec:
   podSelector: {}   # {} = s'applique à tous les Pods du namespace
   policyTypes:
@@ -27,7 +27,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-dns-egress
-  namespace: # ???
+  namespace: taskmanager
 spec:
   podSelector: {}
   policyTypes:
@@ -47,16 +47,16 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-taskmanager-ingress
-  namespace: # ???
+  namespace: taskmanager
 spec:
   podSelector:
     matchLabels:
-      app: # ???
+      app: taskmanager
   policyTypes:
     - Ingress
   ingress:
     - ports:
-        - port: # ??? port de l'application (gunicorn)
+        - port: 5000 # port de l'application (gunicorn)
       # Pas de restriction sur la source : l'Ingress Controller peut venir
       # de kube-system ou d'un autre namespace selon la configuration minikube.
       # Si vous voulez restreindre, filtrez par namespace avec namespaceSelector.
@@ -67,20 +67,20 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-taskmanager-to-redis
-  namespace: # ???
+  namespace: taskmanager
 spec:
   podSelector:
     matchLabels:
-      app: # ??? qui initie la connexion ?
+      app: taskmanager # qui initie la connexion ?
   policyTypes:
     - Egress
   egress:
     - to:
         - podSelector:
             matchLabels:
-              app: # ??? qui reçoit la connexion ?
+              app: redis # qui reçoit la connexion ?
       ports:
-        - port: # ??? port de Redis
+        - port: 6379 # port de Redis
 
 ---
 # Règle 5 : autoriser Redis à recevoir des connexions depuis taskmanager (ingress vers Redis)
@@ -88,17 +88,17 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-redis-from-taskmanager
-  namespace: # ???
+  namespace: taskmanager
 spec:
   podSelector:
     matchLabels:
-      app: # ???
+      app: redis
   policyTypes:
     - Ingress
   ingress:
     - from:
         - podSelector:
             matchLabels:
-              app: # ???
+              app: taskmanager
       ports:
-        - port: # ???
+        - port: 6379

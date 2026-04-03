@@ -14,12 +14,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: taskmanager-sa
-  namespace: # ???
+  namespace: taskmanager
   labels:
     app: taskmanager
 # ??? Quelle option empêche l'injection automatique du token API dans le Pod ?
 # Cherchez : automountServiceAccountToken
 # Justifiez pourquoi c'est une bonne pratique dans votre rendu.
+automountServiceAccountToken: false
 
 ---
 # ----------------------------------------------------------
@@ -30,10 +31,10 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: redis-sa
-  namespace: # ???
+  namespace: taskmanager
   labels:
     app: redis
-automountServiceAccountToken: # ???
+automountServiceAccountToken: false
 
 ---
 # ----------------------------------------------------------
@@ -43,7 +44,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: github-actions
-  namespace: # ???
+  namespace: taskmanager
   labels:
     app: taskmanager
     role: ci-cd
@@ -54,7 +55,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: github-actions-deployer
-  namespace: # ???
+  namespace: taskmanager
 rules:
   # ??? Le job "deploy" exécute : kubectl set image, kubectl apply, kubectl rollout status
   # Quelles ressources et quels verbes sont nécessaires pour chaque opération ?
@@ -67,30 +68,30 @@ rules:
   # Complétez les règles ci-dessous :
   - apiGroups: ["apps"]
     resources: ["deployments"]
-    verbs: # ??? listez les verbes nécessaires pour mettre à jour un Deployment
+    verbs: ["get", "list", "watch", "patch", "update"]
   - apiGroups: ["apps"]
     resources: ["replicasets"]
-    verbs: # ??? kubectl rollout status lit les ReplicaSets — quels verbes ?
+    verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: # ??? pour surveiller l'état du rollout
+    verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["configmaps"]
-    verbs: # ??? si vos manifestes incluent des ConfigMaps
+    verbs: ["get", "list", "watch"]
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: github-actions-deployer-binding
-  namespace: # ???
+  namespace: taskmanager
 subjects:
   - kind: ServiceAccount
-    name: # ??? nom du ServiceAccount CI/CD défini plus haut
-    namespace: # ???
+    name: github-actions
+    namespace: taskmanager
 roleRef:
   kind: Role
-  name: # ??? nom du Role défini plus haut
+  name: github-actions-deployer
   apiGroup: rbac.authorization.k8s.io
 
 ---
@@ -102,7 +103,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: taskmanager-viewer
-  namespace: # ???
+  namespace: taskmanager
 rules:
   # ??? Accordez l'accès en lecture seule aux ressources suivantes :
   # - pods (avec leurs logs)
@@ -116,35 +117,35 @@ rules:
   #
   # Quels verbes correspondent à "lecture seule" ?
   - apiGroups: [""]
-    resources: # ??? listez les ressources core
-    verbs: # ???
+    resources: ["pods", "pods/log", "services", "endpoints", "configmaps", "events", "persistentvolumeclaims"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: ["apps"]
-    resources: # ???
-    verbs: # ???
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: ["networking.k8s.io"]
-    resources: # ???
-    verbs: # ???
+    resources: ["ingresses", "networkpolicies"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: ["autoscaling"]
-    resources: # ???
-    verbs: # ???
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["get", "list", "watch"]
 
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: taskmanager-viewer
-  namespace: # ???
+  namespace: taskmanager
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: taskmanager-viewer-binding
-  namespace: # ???
+  namespace: taskmanager
 subjects:
   - kind: ServiceAccount
     name: taskmanager-viewer
-    namespace: # ???
+    namespace: taskmanager
 roleRef:
   kind: Role
   name: taskmanager-viewer

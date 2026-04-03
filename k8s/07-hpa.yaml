@@ -2,12 +2,12 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: taskmanager-hpa
-  namespace: # ???
+  namespace: taskmanager
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: # ??? nom du Deployment à scaler (voir 04-app.yaml)
+    name: taskmanager
   minReplicas: 2   # valeur imposée par les consignes
   maxReplicas: 6   # valeur imposée par les consignes
   metrics:
@@ -16,7 +16,7 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: # ??? à quel % d'utilisation CPU déclencher le scale-out ?
+          averageUtilization: 70
                               # Trop bas = scale trop souvent. Trop haut = réaction lente.
                               # Justifiez votre choix dans votre rendu.
     # ??? (optionnel) Ajoutez une métrique mémoire si metrics-server le supporte
