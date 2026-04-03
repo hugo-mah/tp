@@ -52,6 +52,10 @@ jobs:
     name: Security Scan (Trivy)
     runs-on: ubuntu-latest
     needs: lint   # ne démarre qu'après la réussite du lint
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
 
     steps:
       - name: Checkout du code
@@ -74,8 +78,10 @@ jobs:
           ignore-unfixed: "true"    # inclure les vulnérabilités sans correctif disponible
 
       - name: Upload rapport SARIF vers GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()   # uploader même si le scan a échoué
+        uses: github/codeql-action/upload-sarif@v4
+        # uploader même si le scan a échoué, mais uniquement quand GitHub autorise l'écriture
+        # (sur PR depuis un fork, le GITHUB_TOKEN ne peut pas écrire dans Security Events)
+        if: always()
         with:
           sarif_file: trivy-results.sarif
 
