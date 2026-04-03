@@ -148,7 +148,9 @@ jobs:
         # Remplace la valeur du champ image: dans 04-app.yaml par le tag du commit actuel.
         # ??? Adaptez cette commande selon la façon dont vous avez écrit votre image dans 04-app.yaml
         run: |
-          sed -i "s|${{ env.IMAGE_NAME }}:.*|${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}|g" k8s/04-app.yaml
+          # GNU sed accepte: sed -i ... ; BSD sed (macOS) requiert une extension.
+          sed -i.bak -e "s|${{ env.IMAGE_NAME }}:.*|${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}|g" k8s/04-app.yaml
+          rm -f k8s/04-app.yaml.bak
 
       - name: Déploiement des manifestes Kubernetes
         run: |
